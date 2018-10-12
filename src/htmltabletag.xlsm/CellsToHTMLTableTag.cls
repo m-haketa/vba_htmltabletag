@@ -9,17 +9,26 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
-Public Function ToString(TableRange As Range) As String
-  ToString = getTableBodyHtmlData(TableRange)
+Dim DataTag(0 To 1) As String
+
+Private Sub Class_Initialize()
+  DataTag(0) = "td"
+  DataTag(1) = "th"
+End Sub
+
+
+Public Function ToString(ByRef TableRange As Range, Optional ByVal HasHeaderRow As Boolean = True, Optional ByVal HasHeaderColumn As Boolean = True) As String
+  ToString = getTableBodyHtmlData(TableRange, HasHeaderRow, HasHeaderColumn)
 End Function
 
 
-Private Function getTableBodyHtmlData(TableRange As Range) As String
+Private Function getTableBodyHtmlData(ByRef TableRange As Range, ByVal ProcessAsHeaderRow As Boolean, ByVal ProcessAsHeaderColumn As Boolean) As String
   Dim Ret As String
   
   Dim RowRange As Range
   For Each RowRange In TableRange.Rows
-    Ret = Ret & getRowHtmlData(RowRange) & vbCrLf
+    Ret = Ret & getRowHtmlData(RowRange, ProcessAsHeaderRow, ProcessAsHeaderColumn) & vbCrLf
+    ProcessAsHeaderRow = False
   Next
 
   Ret = "<table>" & vbCrLf & Ret & "</table>"
@@ -27,14 +36,27 @@ Private Function getTableBodyHtmlData(TableRange As Range) As String
   getTableBodyHtmlData = Ret
 End Function
 
-Private Function getRowHtmlData(RowRange As Range) As String
+Private Function getRowHtmlData(ByRef RowRange As Range, ByVal ProcessAsHeaderRow As Boolean, ByVal ProcessAsHeaderColumn As Boolean) As String
   Dim Ret As String
   
   Dim TargetRange As Range
   For Each TargetRange In RowRange.Columns
-    If Not isMergedCellOtherThanTopLeft(TargetRange) Then
-      Ret = Ret & "<td" & getAlignAttr(TargetRange) & getSpanAttr(TargetRange) & ">" & TargetRange.Text & "</td>"
+  
+    Dim DataTagType As Long
+    If ProcessAsHeaderRow Or ProcessAsHeaderColumn Then
+      DataTagType = 1
+    Else
+      DataTagType = 0
     End If
+
+    If Not isMergedCellOtherThanTopLeft(TargetRange) Then
+      Ret = Ret & "<" & DataTag(DataTagType) _
+                & getAlignAttr(TargetRange) & getSpanAttr(TargetRange) & ">" _
+                & TargetRange.Text & "</" & DataTag(DataTagType) & ">"
+      
+    End If
+    
+    ProcessAsHeaderColumn = False
   Next
   
   Ret = "<tr>" & Ret & "</tr>"
@@ -43,7 +65,7 @@ Private Function getRowHtmlData(RowRange As Range) As String
 End Function
 
 
-Private Function getAlignAttr(TargetRange As Range) As String
+Private Function getAlignAttr(ByRef TargetRange As Range) As String
   Dim Ret As String
   
   With TargetRange
@@ -66,7 +88,7 @@ Private Function getAlignAttr(TargetRange As Range) As String
 End Function
 
 
-Private Function getSpanAttr(TargetRange As Range) As String
+Private Function getSpanAttr(ByRef TargetRange As Range) As String
   Dim Ret As String
   
   With TargetRange
@@ -79,7 +101,7 @@ Private Function getSpanAttr(TargetRange As Range) As String
   getSpanAttr = Ret
 End Function
 
-Private Function isMergedCellOtherThanTopLeft(TargetRange As Range) As Boolean
+Private Function isMergedCellOtherThanTopLeft(ByRef TargetRange As Range) As Boolean
   Dim Ret As Boolean
   
   If TargetRange.MergeCells Then
@@ -96,4 +118,5 @@ Private Function isMergedCellOtherThanTopLeft(TargetRange As Range) As Boolean
 Finally:
   isMergedCellOtherThanTopLeft = Ret
 End Function
+
 
