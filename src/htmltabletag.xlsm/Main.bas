@@ -16,6 +16,7 @@ Sub ClipBoardOutput()
 End Sub
 
 Sub testDebugPrint()
+
   'ìÆçÏÉeÉXÉg
   Dim CT As CellsToHTMLTableTag
   Set CT = New CellsToHTMLTableTag
@@ -29,3 +30,34 @@ Sub testDebugPrint()
 End Sub
 
 
+Sub createTestData()
+ 
+  Range("A1").Value = 1
+  Range("A1").HorizontalAlignment = xlCenter
+  Range("A1:B3").Merge
+  
+  Range("C1").Value = "B"
+  Range("C1").HorizontalAlignment = xlRight
+  
+  Range("C2").Value = 6
+  Range("C3").Value = "A"
+  Range("A4").Value = 10
+  Range("B4").Value = CDate("2014/6/1")
+  Range("C4").Value = 12
+  
+  Range("A1:C4").Borders.LineStyle = xlContinuous
+  
+  
+  Range("B7") = "a"
+  Range("C7") = "b"
+  Range("D7") = "c"
+  
+  Range("A8") = "d"
+  Range("A9") = "e"
+  Range("A10") = "f"
+  Range("A11") = "g"
+  
+  Range("A1:C4").Copy Range("B8:D11")
+  Range("A7:D11").Borders.LineStyle = xlContinuous
+
+End Sub
